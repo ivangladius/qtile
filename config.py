@@ -79,11 +79,14 @@ keys = [
 
 
     Key([], "XF86AudioMute", lazy.spawn("amixer  set Master 1+ toggle")),
-    Key([], "XF86AudioLowerVolume", lazy.spawn("sudo amixer set 'Master' 10%-")),
-    Key([], "XF86AudioRaiseVolume", lazy.spawn("sudo amixer set 'Master' 10%+")),
+    Key([], "XF86AudioLowerVolume", lazy.spawn(" amixer set 'Master' 10%-")),
+    Key([], "XF86AudioRaiseVolume", lazy.spawn(" amixer set 'Master' 10%+")),
     Key([], "XF86AudioMicMute", lazy.spawn("amixer set Capture toggle")),
     Key([], "XF86MonBrightnessDown", lazy.spawn("brightnessctl set 10%-")),
     Key([], "XF86MonBrightnessUp", lazy.spawn("brightnessctl set 10%+")),
+    
+    Key([mod, "shift"], "m", lazy.spawn("bash monitor.sh"), desc="Reset all window sizes"),
+    Key([mod, "shift"], "b", lazy.spawn("bash fastpdf.sh"), desc="Reset all window sizes"),
     
     # Toggle between split and unsplit sides of stack.
     # Split = all windows displayed
