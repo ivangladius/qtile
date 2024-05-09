@@ -18,7 +18,7 @@
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THEdeledele
 # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
@@ -32,13 +32,25 @@ from libqtile.config import Click, Drag, Group, Key, Match, Screen
 from libqtile.lazy import lazy
 from libqtile.utils import guess_terminal
 from libqtile import hook
+from libqtile import qtile
 
 cursor_warp = True
+
+home_path="/home/max"
 
 @hook.subscribe.startup_once
 def autostart():
     home = os.path.expanduser('~/.config/qtile/autostart.sh')
     subprocess.Popen([home])
+
+redshift_states = [7000, 6000, 5000, 4000, 3000]
+def cycle_redshift(qtile):
+    qtile.cmd_spawn("redshift -x")
+    qtile.cmd_spawn(f"redshift -O {redshift_states[0]}")
+    last = redshift_states.pop(0)
+    redshift_states.append(last)
+
+
 
 mod = "mod4"
 terminal = guess_terminal()
@@ -70,8 +82,7 @@ keys = [
     Key([mod], "a", lazy.spawn("rofi -show window -font 'hack 15'"), desc="Reset all window sizes"),
     Key([mod], "s", lazy.spawn("rofi -show run -font 'hack 15'"), desc="Reset all window sizes"),
     Key([mod], "d", lazy.spawn("rofi -show drun -font 'hack 15'"), desc="Reset all window sizes"),
-    Key([mod], "7", lazy.spawn("thunar"), desc="Reset all window sizes"),
-    Key([mod], "7", lazy.spawn("thunar"), desc="Reset all window sizes"),
+    Key([mod], "7", lazy.spawn("nautilus --new-window"), desc="Reset all window sizes"),
     Key([mod], "8", lazy.spawn("chromium --new-window"), desc="Reset all window sizes"),
     Key([mod], "0", lazy.spawn("alacritty"), desc="Reset all window sizes"),
         
@@ -79,14 +90,27 @@ keys = [
 
 
     Key([], "XF86AudioMute", lazy.spawn("amixer  set Master 1+ toggle")),
-    Key([], "XF86AudioLowerVolume", lazy.spawn(" amixer set 'Master' 10%-")),
-    Key([], "XF86AudioRaiseVolume", lazy.spawn(" amixer set 'Master' 10%+")),
+    # Key([], "XF86AudioLowerVolume", lazy.spawn("amixer set 'Master' 10%-")),
+    # Key([], "XF86AudioRaiseVolume", lazy.spawn("amixer set 'Master' 10%+")),
+    Key([], "XF86AudioLowerVolume", lazy.spawn(f"bash {home_path}/scripts/sound.sh down")),
+    Key([], "XF86AudioRaiseVolume", lazy.spawn(f"bash {home_path}/scripts/sound.sh up")),
     Key([], "XF86AudioMicMute", lazy.spawn("amixer set Capture toggle")),
-    Key([], "XF86MonBrightnessDown", lazy.spawn("brightnessctl set 10%-")),
-    Key([], "XF86MonBrightnessUp", lazy.spawn("brightnessctl set 10%+")),
+      # Key([], "XF86MonBrightnessDown", lazy.spawn("brightnessctl set 10%-")),
+       # Key([], "XF86MonBrightnessUp", lazy.spawn("brightnessctl set 10%+")),
+    Key([], "XF86MonBrightnessDown", lazy.spawn(f"bash {home_path}/scripts/brightness.sh down")),
+    Key([], "XF86MonBrightnessUp", lazy.spawn(f"bash {home_path}/scripts/brightness.sh up")),
+
+    #
+    # Key([], "F1", lazy.spawn("amixer  set Master 1+ toggle")),
+    # Key([], "F2", lazy.spawn(" amixer set 'Master' 10%-")),
+    # Key([], "F3", lazy.spawn(" amixer set 'Master' 10%+")),
+    # Key([], "F4", lazy.spawn("amixer set Capture toggle")),
+    # Key([], "F5", lazy.spawn("brightnessctl set 10%-")),
+    # Key([], "F6", lazy.spawn("brightnessctl set 10%+")),
     
     Key([mod, "shift"], "m", lazy.spawn("bash monitor.sh"), desc="Reset all window sizes"),
     Key([mod, "shift"], "b", lazy.spawn("bash fastpdf.sh"), desc="Reset all window sizes"),
+    Key([mod, "shift"], "n", lazy.function(cycle_redshift) , desc="cycle trough redshift"),
     
     # Toggle between split and unsplit sides of stack.
     # Split = all windows displayed
@@ -107,7 +131,7 @@ keys = [
     Key([mod], "Return", lazy.spawn(terminal), desc="Launch terminal"),
     # Toggle between different layouts as defined below
     # Key([mod], "Tab", lazy.next_layout(), desc="Toggle between layouts"),
-    Key([mod], "w", lazy.window.kill(), desc="Kill focused window"),
+    Key([mod, "shift"], "a", lazy.window.kill(), desc="Kill focused window"),
     Key(
         [mod],
         "f",
@@ -120,29 +144,55 @@ keys = [
     # Key([mod], "d", lazy.spawncmd(), desc="Spawn a command using a prompt widget"),
 ]
 
-groups = [Group(i) for i in "1234"]
+#groups = [Group(i) for i in "1234"]
+
+groups = [
+    # Screen affinity here is used to make
+    # sure the groups startup on the right screens
+    Group(name="1", screen_affinity=0),
+    Group(name="2", screen_affinity=0),
+    #Group(name="3", screen_affinity=0),
+    Group(name="q", screen_affinity=1),
+    Group(name="w", screen_affinity=1),
+    #Group(name="e", screen_affinity=1),
+]
+def go_to_group(name: str):
+    def _inner(qtile):
+        if len(qtile.screens) == 1:
+            qtile.groups_map[name].toscreen()
+            return
+
+        if name in '12':
+            qtile.focus_screen(0)
+            qtile.groups_map[name].toscreen()
+        else:
+            qtile.focus_screen(1)
+            qtile.groups_map[name].toscreen()
+
+    return _inner
 
 for i in groups:
     keys.extend(
         [
+            Key([mod], i.name, lazy.function(go_to_group(i.name))),
             # mod1 + letter of group = switch to group
-            Key(
-                [mod],
-                i.name,
-                lazy.group[i.name].toscreen(),
-                desc="Switch to group {}".format(i.name),
-            ),
+            # Key(
+            #     [mod],
+            #     i.name,
+            #     lazy.group[i.name].toscreen(),
+            #     desc="Switch to group {}".format(i.name),
+            # ),
             # mod1 + shift + letter of group = switch to & move focused window to group
-            Key(
-                [mod, "shift"],
-                i.name,
-                lazy.window.togroup(i.name, switch_group=True),
-                desc="Switch to & move focused window to group {}".format(i.name),
-            ),
+            # Key(
+            #     [mod, "shift"],
+            #     i.name,
+            #     lazy.window.togroup(i.name, switch_group=True),
+            #     desc="Switch to & move focused window to group {}".format(i.name),
+            # ),
             # Or, use below if you prefer not to switch to that group.
             # # mod1 + shift + letter of group = move focused window to group
-            # Key([mod, "shift"], i.name, lazy.window.togroup(i.name),
-            #     desc="move focused window to group {}".format(i.name)),
+            Key([mod, "shift"], i.name, lazy.window.togroup(i.name),
+                desc="move focused window to group {}".format(i.name)),
         ]
     )
 
@@ -164,8 +214,8 @@ layouts = [
 ]
 
 widget_defaults = dict(
-    font="sans",
-    fontsize=12,
+    font="Jetbrains Mono",
+    fontsize=18,
     padding=3,
 )
 extension_defaults = widget_defaults.copy()
@@ -174,25 +224,32 @@ screens = [
     Screen(
         bottom=bar.Bar(
             [
-                widget.CurrentLayout(),
+                #widget.CurrentLayout(),
                 widget.GroupBox(),
                 widget.Prompt(),
-                widget.WindowName(),
-                widget.Chord(
-                    chords_colors={
-                        "launch": ("#ff0000", "#ffffff"),
-                    },
-                    name_transform=lambda name: name.upper(),
-                ),
-                widget.TextBox("default config", name="default"),
-                widget.TextBox("Press &lt;M-r&gt; to spawn", foreground="#d75f5f"),
+                #widget.WindowName(),
+                # widget.Chord(
+                #     chords_colors={
+                #         "launch": ("#ff0000", "#ffffff"),
+                #     },
+                #     name_transform=lambda name: name.upper(),
+                # ),
+                #widget.TextBox("default config", name="default"),
+                #widget.TextBox("Press &lt;M-r&gt; to spawn", foreground="#d75f5f"),
                 # NB Systray is incompatible with Wayland, consider using StatusNotifier instead
                 # widget.StatusNotifier(),
-                widget.Systray(),
-                widget.Clock(format="%Y-%m-%d %a %I:%M %p"),
-                widget.QuickExit(),
+                #widget.Systray(),
+                widget.Clock(format="%d-%m-%Y %a %I:%M %p"),
+                widget.Battery(foreground="#FFFC00"),
+                #widget.Bluetooth(),
+                widget.Wlan(),
+                widget.CPU(),
+                widget.Volume()
+
+                # widget.QuickExit(),
             ],
             24,
+            backgrond="#020000"
             # border_width=[2, 0, 2, 0],  # Draw top and bottom borders
             # border_color=["ff00ff", "000000", "ff00ff", "000000"]  # Borders are magenta
         ),
