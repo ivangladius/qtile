@@ -198,7 +198,7 @@ for i in groups:
 
 layouts = [
     layout.Columns(border_focus_stack=["#E14545", "#E14545"], border_width=4,
-                   margin = 16),
+                   margin = 0),
     layout.Max(),
     # Try more layouts by unleashing below layouts.
     # layout.Stack(num_stacks=2),
@@ -245,7 +245,7 @@ screens = [
                 #widget.Bluetooth(),
                 #widget.Wlan(),
                 widget.Net(),
-                widget.NetGraph(type='line', graph_color='ffff00', border_color='000000', frequency=0.1),
+                widget.NetGraph(type='line', graph_color='ffff00', border_color='000000', frequency=0.1, bandwith_type='down', interface='auto'),
                 widget.Systray(),
                 widget.Sep(foreground='FFFFFF', linewidth=2, padding=10),
                 widget.CPU(),
