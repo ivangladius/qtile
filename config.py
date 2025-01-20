@@ -79,14 +79,15 @@ keys = [
     Key([mod], "n", lazy.layout.normalize(), desc="Reset all window sizes"),
 
 
-    Key([mod], "a", lazy.spawn("rofi -show window -font 'hack 15'"), desc="Reset all window sizes"),
-    Key([mod], "s", lazy.spawn("rofi -show run -font 'hack 15'"), desc="Reset all window sizes"),
-    Key([mod], "d", lazy.spawn("rofi -show drun -font 'hack 15'"), desc="Reset all window sizes"),
+    Key([mod], "i", lazy.spawn("rofi -show window -font 'hack 15'"), desc="Reset all window sizes"),
+    Key([mod], "o", lazy.spawn("rofi -show run -font 'hack 15'"), desc="Reset all window sizes"),
+    Key([mod], "p", lazy.spawn("rofi -show drun -font 'hack 15'"), desc="Reset all window sizes"),
     Key([mod], "7", lazy.spawn("nautilus --new-window"), desc="Reset all window sizes"),
-    Key([mod], "8", lazy.spawn("chromium --new-window"), desc="Reset all window sizes"),
+    Key([mod], "8", lazy.spawn("chromium-browser --new-window"), desc="Reset all window sizes"),
+    Key([mod], "9", lazy.spawn("emacs"), desc="Reset all window sizes"),
     Key([mod], "0", lazy.spawn("alacritty"), desc="Reset all window sizes"),
         
-    Key([mod], "o", lazy.next_screen(), desc="Next Monitor"),
+    #Key([mod], "o", lazy.next_screen(), desc="Next Monitor"),
 
 
     Key([], "XF86AudioMute", lazy.spawn("amixer  set Master 1+ toggle")),
@@ -215,7 +216,7 @@ layouts = [
 
 widget_defaults = dict(
     font="Jetbrains Mono",
-    fontsize=18,
+    fontsize=25,
     padding=3,
 )
 extension_defaults = widget_defaults.copy()
@@ -242,8 +243,8 @@ screens = [
                 widget.Sep(foreground='FFFFFF', linewidth=2, padding=10),
                 widget.Battery(foreground="#FFFC00", charge_char='C', discharge_char='D', full_char='F', low_foreground="#FF0000", low_percentage=0.1),
                 widget.Sep(foreground='FFFFFF', linewidth=2, padding=10),
-                #widget.Bluetooth(),
-                #widget.Wlan(),
+                widget.Bluetooth(),
+                widget.Wlan(),
                 widget.Net(),
                 widget.NetGraph(type='line', graph_color='ffff00', border_color='000000', frequency=0.1, bandwith_type='down', interface='auto'),
                 widget.Systray(),
@@ -256,7 +257,11 @@ screens = [
                 widget.Memory(),
                 widget.MemoryGraph(type='line', graph_color='ffff00', border_color='000000', frequency=1),
                 widget.Sep(foreground='FFFFFF', linewidth=2, padding=10),
+                widget.CryptoTicker(crypto="BTC"),
+                widget.Sep(foreground='FFFFFF', linewidth=2, padding=10),
                 widget.CryptoTicker(crypto="ETH"),
+                widget.Sep(foreground='FFFFFF', linewidth=2, padding=10),
+                widget.CryptoTicker(crypto="SOL"),
                 widget.Sep(foreground='FFFFFF', linewidth=2, padding=10),
                 #widget.Notify()
 
